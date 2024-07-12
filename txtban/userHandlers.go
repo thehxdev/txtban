@@ -38,6 +38,7 @@ func (t *Txtban) useraddHandler(c *fiber.Ctx) error {
 func (t *Txtban) userdelHandler(c *fiber.Ctx) error {
 	authKey, err := getAuthKey(c.GetReqHeaders())
 	if err != nil {
+		t.ErrLogger.Println(err.Error())
 		return err
 	}
 

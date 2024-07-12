@@ -46,6 +46,7 @@ func (t *Txtban) readHandler(c *fiber.Ctx) error {
 func (t *Txtban) teeHandler(c *fiber.Ctx) error {
 	authKey, err := getAuthKey(c.GetReqHeaders())
 	if err != nil {
+		t.ErrLogger.Println(err.Error())
 		return err
 	}
 
@@ -62,6 +63,7 @@ func (t *Txtban) teeHandler(c *fiber.Ctx) error {
 
 	txtid, err := t.Conn.CreateTxt(user.ID, txtName, string(c.Body()))
 	if err != nil {
+		t.ErrLogger.Println(err.Error())
 		return err
 	}
 
@@ -74,6 +76,7 @@ func (t *Txtban) teeHandler(c *fiber.Ctx) error {
 func (t *Txtban) rmHandler(c *fiber.Ctx) error {
 	authKey, err := getAuthKey(c.GetReqHeaders())
 	if err != nil {
+		t.ErrLogger.Println(err.Error())
 		return err
 	}
 
@@ -91,6 +94,7 @@ func (t *Txtban) rmHandler(c *fiber.Ctx) error {
 
 	err = t.Conn.DeleteTxt(txtid)
 	if err != nil {
+		t.ErrLogger.Println(err.Error())
 		return err
 	}
 
@@ -100,6 +104,7 @@ func (t *Txtban) rmHandler(c *fiber.Ctx) error {
 func (t *Txtban) lsHandler(c *fiber.Ctx) error {
 	authKey, err := getAuthKey(c.GetReqHeaders())
 	if err != nil {
+		t.ErrLogger.Println(err.Error())
 		return err
 	}
 
@@ -111,6 +116,7 @@ func (t *Txtban) lsHandler(c *fiber.Ctx) error {
 
 	txts, err := t.Conn.GetAllTxts(user.ID)
 	if err != nil {
+		t.ErrLogger.Println(err.Error())
 		return err
 	}
 
@@ -120,6 +126,7 @@ func (t *Txtban) lsHandler(c *fiber.Ctx) error {
 func (t *Txtban) chtxtHandler(c *fiber.Ctx) error {
 	authKey, err := getAuthKey(c.GetReqHeaders())
 	if err != nil {
+		t.ErrLogger.Println(err.Error())
 		return err
 	}
 
@@ -147,6 +154,7 @@ func (t *Txtban) chtxtHandler(c *fiber.Ctx) error {
 func (t *Txtban) mvHandler(c *fiber.Ctx) error {
 	authKey, err := getAuthKey(c.GetReqHeaders())
 	if err != nil {
+		t.ErrLogger.Println(err.Error())
 		return err
 	}
 
@@ -164,6 +172,7 @@ func (t *Txtban) mvHandler(c *fiber.Ctx) error {
 
 	newId, err := t.Conn.ChangeTxtId(txtid)
 	if err != nil {
+		t.ErrLogger.Println(err.Error())
 		return err
 	}
 
@@ -175,6 +184,7 @@ func (t *Txtban) mvHandler(c *fiber.Ctx) error {
 func (t *Txtban) renameHandler(c *fiber.Ctx) error {
 	authKey, err := getAuthKey(c.GetReqHeaders())
 	if err != nil {
+		t.ErrLogger.Println(err.Error())
 		return err
 	}
 
@@ -198,6 +208,7 @@ func (t *Txtban) renameHandler(c *fiber.Ctx) error {
 
 	err = t.Conn.ChangeTxtName(txtid, jdata["name"])
 	if err != nil {
+		t.ErrLogger.Println(err.Error())
 		return err
 	}
 

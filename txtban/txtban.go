@@ -39,6 +39,7 @@ func Init(configPath string) *Txtban {
 }
 
 func (t *Txtban) Run() error {
+    t.InfLogger.Println("starting server...")
 	listenAddr := fmt.Sprintf("%s:%d", viper.GetString("server.address"), viper.GetInt("server.port"))
 	return t.App.Listen(listenAddr)
 }
@@ -46,9 +47,11 @@ func (t *Txtban) Run() error {
 func (t *Txtban) setupDB(path string) {
 	var dbIsNew bool
 	if _, err := os.Stat(path); err != nil {
+        t.InfLogger.Println("must create a new database file")
 		dbIsNew = true
 	}
 
+    t.InfLogger.Printf("connecting to sqlite3 database at %s\n", path)
 	db, err := sql.Open("sqlite3", fmt.Sprintf("%s?parseTime=true", path))
 	if err != nil {
 		t.ErrLogger.Fatal(err)
@@ -56,11 +59,13 @@ func (t *Txtban) setupDB(path string) {
 	t.Conn.DB = db
 
 	if dbIsNew {
+        t.InfLogger.Println("creating tablse...")
 		t.Conn.MigrateDB()
 	}
 }
 
 func (t *Txtban) ConfigureRoutes() {
+    t.InfLogger.Println("configuring routes...")
 	app := t.App
 
 	// User related routes
