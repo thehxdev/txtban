@@ -9,4 +9,4 @@ ENV GOPROXY=https://goproxy.io,direct
 ENV CGO_ENABLED=1
 RUN go build -ldflags='-s' -o tb .
 
-CMD ["./tb"]
+CMD ["./tb", "-c", "./config.toml"]
