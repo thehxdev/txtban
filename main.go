@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	configPath := flag.String("c", "", "Path to config file")
+	configPath := flag.String("c", "./config.toml", "Path to config file")
 	flag.Parse()
 
 	tb := txtban.Init(*configPath)
