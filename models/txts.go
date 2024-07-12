@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/thehxdev/txtban/tbconst"
@@ -19,9 +18,9 @@ type Txt struct {
 func (c *Conn) CreateTxt(uid int, name, content string) (string, error) {
 	idLen := tbrandom.GenRandNum(4, tbconst.MAX_TXT_ID_LEN)
 
-	if len(content) > tbconst.MAX_TXT_CONTENT_LEN {
-		return "", fmt.Errorf("content lenght must be less than or equal to %d bytes", tbconst.MAX_TXT_CONTENT_LEN)
-	}
+	// if len(content) > tbconst.MAX_TXT_CONTENT_LEN {
+	// 	return "", fmt.Errorf("content lenght must be less than or equal to %d bytes", tbconst.MAX_TXT_CONTENT_LEN)
+	// }
 
 	id := tbrandom.GenRandString(idLen)
 	stmt := `INSERT INTO txts (id, name, content, uid) VALUES (?, ?, ?, ?)`
@@ -98,9 +97,9 @@ func (c *Conn) GetAllTxts(uid int) ([]*Txt, error) {
 }
 
 func (c *Conn) ChangeTxtContent(txtid string, content string) error {
-	if len(content) > tbconst.MAX_TXT_CONTENT_LEN {
-		return fmt.Errorf("content lenght must be less than or equal to %d bytes", tbconst.MAX_TXT_CONTENT_LEN)
-	}
+	// if len(content) > tbconst.MAX_TXT_CONTENT_LEN {
+	// 	return fmt.Errorf("content lenght must be less than or equal to %d bytes", tbconst.MAX_TXT_CONTENT_LEN)
+	// }
 
 	stmt := `UPDATE txts SET content = ? WHERE id = ?`
 
