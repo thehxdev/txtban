@@ -1,5 +1,6 @@
 # Txtban
-Txtban is a server-side application for txt content sharing written in golang. It does not include a front-end.
+Txtban is a server-side application for txt content sharing written in golang.
+It does not include a front-end But [tbc](https://github.com/thehxdev/tbc) is a cli client for txtban services.
 
 
 ## Build
