@@ -1,5 +1,6 @@
 GO := go
 BIN := tb
+DATA_DIR := ./data
 
 $(BIN): $(wildcard *.go) $(wildcard */*.go)
 	CGO_ENABLED=1 $(GO) build -ldflags='-s' -o $(BIN) .
@@ -14,4 +15,4 @@ docker_exe:
 	docker run --rm -v $(shell pwd):/app -w /app golang:1.22-bullseye make
 
 clean:
-	rm -rf *.db $(BIN)
+	rm -rf *.db $(BIN) $(DATA_DIR)
