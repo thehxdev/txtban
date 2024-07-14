@@ -5,8 +5,8 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
+	"github.com/spf13/viper"
 	"github.com/thehxdev/txtban/models"
-	"github.com/thehxdev/txtban/tbconst"
 )
 
 func (t *Txtban) useraddHandler(c *fiber.Ctx) error {
@@ -24,9 +24,10 @@ func (t *Txtban) useraddHandler(c *fiber.Ctx) error {
 	}
 
 	pass := jdata["password"]
-	if len(pass) < tbconst.MIN_PASSWORD_LEN {
+	minPassLen := viper.GetInt("limits.minPasswordLen")
+	if len(pass) < minPassLen {
 		c.Status(fiber.StatusBadRequest)
-		return fmt.Errorf("password length is less than %d characters", tbconst.MIN_PASSWORD_LEN)
+		return fmt.Errorf("password length is less than %d characters", minPassLen)
 	}
 
 	authKey := models.CreateAuthKey(uuid.String(), pass)

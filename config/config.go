@@ -13,6 +13,12 @@ type TbConfig struct {
 	Database struct {
 		Path string
 	}
+
+	Limits struct {
+		MinPasswordLen int
+		MaxTxtIdLen    int
+		MaxTxtNameLen  int
+	}
 }
 
 func SetupViper(c *TbConfig, configPath string) {

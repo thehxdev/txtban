@@ -4,3 +4,8 @@ port = 8080
 
 [database]
 path = "./database.db"
+
+[limits]
+minPasswordLen = 8
+maxTxtIdLen = 8 
+maxTxtNameLen = 32

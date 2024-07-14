@@ -1,10 +1,9 @@
 package models
 
 import (
-	"time"
-
-	"github.com/thehxdev/txtban/tbconst"
+	"github.com/spf13/viper"
 	"github.com/thehxdev/txtban/tbrandom"
+	"time"
 )
 
 type Txt struct {
@@ -16,11 +15,7 @@ type Txt struct {
 }
 
 func (c *Conn) CreateTxt(uid int, name, content string) (string, error) {
-	idLen := tbrandom.GenRandNum(4, tbconst.MAX_TXT_ID_LEN)
-
-	// if len(content) > tbconst.MAX_TXT_CONTENT_LEN {
-	// 	return "", fmt.Errorf("content lenght must be less than or equal to %d bytes", tbconst.MAX_TXT_CONTENT_LEN)
-	// }
+	idLen := tbrandom.GenRandNum(4, viper.GetInt("limits.maxTxtIdLen"))
 
 	id := tbrandom.GenRandString(idLen)
 	stmt := `INSERT INTO txts (id, name, content, uid) VALUES (?, ?, ?, ?)`
@@ -97,10 +92,6 @@ func (c *Conn) GetAllTxts(uid int) ([]*Txt, error) {
 }
 
 func (c *Conn) ChangeTxtContent(txtid string, content string) error {
-	// if len(content) > tbconst.MAX_TXT_CONTENT_LEN {
-	// 	return fmt.Errorf("content lenght must be less than or equal to %d bytes", tbconst.MAX_TXT_CONTENT_LEN)
-	// }
-
 	stmt := `UPDATE txts SET content = ? WHERE id = ?`
 
 	_, err := c.DB.Exec(stmt, content, txtid)
@@ -112,7 +103,7 @@ func (c *Conn) ChangeTxtContent(txtid string, content string) error {
 }
 
 func (c *Conn) ChangeTxtId(txtid string) (string, error) {
-	newId := tbrandom.GenRandString(tbrandom.GenRandNum(4, tbconst.MAX_TXT_ID_LEN))
+	newId := tbrandom.GenRandString(tbrandom.GenRandNum(4, viper.GetInt("limits.maxTxtIdLen")))
 	stmt := `UPDATE txts SET id = ? WHERE id = ?`
 
 	_, err := c.DB.Exec(stmt, newId, txtid)
