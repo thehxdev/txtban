@@ -5,7 +5,7 @@ WORKDIR /app
 RUN mkdir -p ./data && apk update && apk add --no-cache build-base make alpine-sdk sqlite
 
 ENV GOPROXY=https://goproxy.io,direct
-COPY go.mod go.sum .
+COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
