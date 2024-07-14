@@ -1,9 +1,12 @@
 package txtban
 
 import (
+	"fmt"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/thehxdev/txtban/models"
+	"github.com/thehxdev/txtban/tbconst"
 )
 
 func (t *Txtban) useraddHandler(c *fiber.Ctx) error {
@@ -21,6 +24,11 @@ func (t *Txtban) useraddHandler(c *fiber.Ctx) error {
 	}
 
 	pass := jdata["password"]
+	if len(pass) < tbconst.MIN_PASSWORD_LEN {
+		c.Status(fiber.StatusBadRequest)
+		return fmt.Errorf("password length is less than %d characters", tbconst.MIN_PASSWORD_LEN)
+	}
+
 	authKey := models.CreateAuthKey(uuid.String(), pass)
 	err = t.Conn.CreateUser(uuid.String(), pass, authKey)
 	if err != nil {

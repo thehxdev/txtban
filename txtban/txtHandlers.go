@@ -177,7 +177,7 @@ func (t *Txtban) mvHandler(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(map[string]string{
-		"id":   newId,
+		"id": newId,
 	})
 }
 

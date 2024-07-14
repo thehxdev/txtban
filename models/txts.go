@@ -123,7 +123,6 @@ func (c *Conn) ChangeTxtId(txtid string) (string, error) {
 	return newId, nil
 }
 
-
 func (c *Conn) ChangeTxtName(txtid, name string) error {
 	stmt := `UPDATE txts SET name = ? WHERE id = ?`
 
