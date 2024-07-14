@@ -21,16 +21,16 @@ func main() {
 	signal.Notify(sigChan, syscall.SIGTERM, syscall.SIGINT)
 
 	go func() {
-        err := tb.Run()
-        if err != nil {
-            tb.ErrLogger.Println(err)
-        }
+		err := tb.Run()
+		if err != nil {
+			tb.ErrLogger.Println(err)
+		}
 	}()
 
 	_ = <-sigChan
-    tb.InfLogger.Println("Shutting down the server...")
-    err := tb.App.ShutdownWithTimeout(time.Second * 10)
-    if err != nil {
-        tb.ErrLogger.Println(err)
-    }
+	tb.InfLogger.Println("Shutting down the server...")
+	err := tb.App.ShutdownWithTimeout(time.Second * 10)
+	if err != nil {
+		tb.ErrLogger.Println(err)
+	}
 }

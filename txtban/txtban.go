@@ -68,6 +68,9 @@ func (t *Txtban) ConfigureRoutes() {
 	t.InfLogger.Println("configuring routes...")
 	app := t.App
 
+	// Root
+	app.Get("/", rootHandler)
+
 	// User related routes
 	app.Post("/useradd", t.useraddHandler)
 	app.Get("/whoami", t.whoamiHandler)
@@ -75,7 +78,6 @@ func (t *Txtban) ConfigureRoutes() {
 	app.Put("/passwd", t.passwdHandler)
 
 	// Txt related routes
-	// app.Get("/cat", t.catHandler)
 	app.Post("/tee", t.teeHandler)
 	app.Get("/ls", t.lsHandler)
 	app.Put("/chtxt", t.chtxtHandler)
@@ -83,4 +85,8 @@ func (t *Txtban) ConfigureRoutes() {
 	app.Get("/t/:txtid", t.readHandler)
 	app.Put("/mv", t.mvHandler)
 	app.Put("/rename", t.renameHandler)
+}
+
+func rootHandler(c *fiber.Ctx) error {
+	return c.SendString("txtban service running!")
 }
