@@ -21,6 +21,7 @@ func main() {
 	signal.Notify(sigChan, syscall.SIGTERM, syscall.SIGINT)
 
 	go func() {
+		defer close(sigChan)
 		err := tb.Run()
 		if err != nil {
 			tb.ErrLogger.Println(err)
