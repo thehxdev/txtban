@@ -7,5 +7,5 @@ path = "./data/database.db"
 
 [limits]
 minPasswordLen = 8
-maxTxtIdLen = 8 
+maxTxtIdLen = 8
 maxTxtNameLen = 32
