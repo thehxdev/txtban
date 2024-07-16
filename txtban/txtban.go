@@ -52,7 +52,7 @@ func (t *Txtban) setupDB(path string) {
 		dbIsNew = true
 	}
 
-    t.InfLogger.Println("Setting up sqlite3 database...")
+	t.InfLogger.Println("Setting up sqlite3 database...")
 	err := t.DB.SetupSqliteDB(path)
 	if err != nil {
 		t.ErrLogger.Fatal(err)
