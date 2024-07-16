@@ -1,7 +1,6 @@
 package txtban
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"os"
@@ -17,7 +16,7 @@ const VERSION string = "1.0.0"
 
 type Txtban struct {
 	App       *fiber.App
-	Conn      *models.Conn
+	DB        *models.DB
 	ErrLogger *log.Logger
 	InfLogger *log.Logger
 	Config    *config.TbConfig
@@ -28,7 +27,7 @@ func Init(configPath string) *Txtban {
 		App:       fiber.New(),
 		ErrLogger: log.New(os.Stderr, "[ERROR]\t", log.Ldate|log.Ltime|log.Lshortfile),
 		InfLogger: log.New(os.Stdout, "[INFO]\t", log.Ldate|log.Ltime),
-		Conn:      &models.Conn{},
+		DB:        &models.DB{},
 		Config:    &config.TbConfig{},
 	}
 
@@ -53,17 +52,21 @@ func (t *Txtban) setupDB(path string) {
 		dbIsNew = true
 	}
 
-	t.InfLogger.Printf("connecting to sqlite3 database at %s\n", path)
-	db, err := sql.Open("sqlite3", fmt.Sprintf("%s?parseTime=true", path))
+    t.InfLogger.Println("Setting up sqlite3 database...")
+	err := t.DB.SetupSqliteDB(path)
 	if err != nil {
 		t.ErrLogger.Fatal(err)
 	}
-	t.Conn.DB = db
 
 	if dbIsNew {
-		t.InfLogger.Println("creating tablse...")
-		t.Conn.MigrateDB()
+		t.InfLogger.Println("creating tables...")
+		t.DB.MigrateDB()
 	}
+}
+
+func (t *Txtban) CloseDB() {
+	t.DB.Read.Close()
+	t.DB.Write.Close()
 }
 
 func (t *Txtban) ConfigureRoutes() {

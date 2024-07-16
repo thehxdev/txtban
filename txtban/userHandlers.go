@@ -34,7 +34,7 @@ func (t *Txtban) useraddHandler(c *fiber.Ctx) error {
 	}
 
 	authKey := models.CreateAuthKey(uuid.String(), pass)
-	err = t.Conn.CreateUser(uuid.String(), pass, authKey)
+	err = t.DB.CreateUser(uuid.String(), pass, authKey)
 	if err != nil {
 		return err
 	}
@@ -54,13 +54,13 @@ func (t *Txtban) userdelHandler(c *fiber.Ctx) error {
 		return err
 	}
 
-	user, err := t.Conn.AuthenticateByAuthKey(authKey)
+	user, err := t.DB.AuthenticateByAuthKey(authKey)
 	if err != nil {
 		t.ErrLogger.Println(err.Error())
 		return err
 	}
 
-	err = t.Conn.DeleteUser(user.ID)
+	err = t.DB.DeleteUser(user.ID)
 	if err != nil {
 		t.ErrLogger.Println(err.Error())
 		return err
@@ -78,7 +78,7 @@ func (t *Txtban) whoamiHandler(c *fiber.Ctx) error {
 		return err
 	}
 
-	user, err := t.Conn.AuthenticateByPassword(jdata["uuid"], jdata["password"])
+	user, err := t.DB.AuthenticateByPassword(jdata["uuid"], jdata["password"])
 	if err != nil {
 		t.ErrLogger.Println(err.Error())
 		return err
@@ -97,7 +97,7 @@ func (t *Txtban) passwdHandler(c *fiber.Ctx) error {
 		return err
 	}
 
-	user, err := t.Conn.AuthenticateByPassword(jdata["uuid"], jdata["old_password"])
+	user, err := t.DB.AuthenticateByPassword(jdata["uuid"], jdata["old_password"])
 	if err != nil {
 		t.ErrLogger.Println(err.Error())
 		return err
@@ -105,7 +105,7 @@ func (t *Txtban) passwdHandler(c *fiber.Ctx) error {
 
 	newPass := jdata["new_password"]
 	newAuthKey := models.CreateAuthKey(user.UUID, newPass)
-	err = t.Conn.UpdateUserPassword(user.ID, newPass, newAuthKey)
+	err = t.DB.UpdateUserPassword(user.ID, newPass, newAuthKey)
 	if err != nil {
 		t.ErrLogger.Println(err.Error())
 		return err

@@ -16,18 +16,13 @@ type Txt struct {
 	UID     int        `json:"uid,omitempty"`
 }
 
-func (c *Conn) CreateTxt(uid int, name, content string) (string, error) {
+func (d *DB) CreateTxt(uid int, name, content string) (string, error) {
 	idLen := tbrandom.GenRandNum(4, viper.GetInt("limits.maxTxtIdLen"))
 
 	id := tbrandom.GenRandString(idLen)
 	stmt := `INSERT INTO txts (id, name, content, uid) VALUES (?, ?, ?, ?)`
 
-	res, err := c.DB.Exec(stmt, id, name, content, uid)
-	if err != nil {
-		return "", tberr.New(err.Error())
-	}
-
-	_, err = res.LastInsertId()
+	_, err := d.Write.Exec(stmt, id, name, content, uid)
 	if err != nil {
 		return "", tberr.New(err.Error())
 	}
@@ -35,11 +30,11 @@ func (c *Conn) CreateTxt(uid int, name, content string) (string, error) {
 	return id, nil
 }
 
-func (c *Conn) GetTxtByName(uid int, name string) (*Txt, error) {
+func (d *DB) GetTxtByName(uid int, name string) (*Txt, error) {
 	txt := new(Txt)
 	stmt := `SELECT * FROM txts WHERE uid = ? AND name = ?`
 
-	err := c.DB.QueryRow(stmt, uid, name).Scan(&txt.ID, &txt.Name, &txt.Content, &txt.Created, &txt.UID)
+	err := d.Read.QueryRow(stmt, uid, name).Scan(&txt.ID, &txt.Name, &txt.Content, &txt.Created, &txt.UID)
 	if err != nil {
 		return nil, tberr.New(err.Error())
 	}
@@ -47,11 +42,11 @@ func (c *Conn) GetTxtByName(uid int, name string) (*Txt, error) {
 	return txt, nil
 }
 
-func (c *Conn) GetTxtById(txtid string) (*Txt, error) {
+func (d *DB) GetTxtById(txtid string) (*Txt, error) {
 	txt := new(Txt)
 	stmt := `SELECT * FROM txts WHERE id = ?`
 
-	err := c.DB.QueryRow(stmt, txtid).Scan(&txt.ID, &txt.Name, &txt.Content, &txt.Created, &txt.UID)
+	err := d.Read.QueryRow(stmt, txtid).Scan(&txt.ID, &txt.Name, &txt.Content, &txt.Created, &txt.UID)
 	if err != nil {
 		return nil, tberr.New(err.Error())
 	}
@@ -59,11 +54,11 @@ func (c *Conn) GetTxtById(txtid string) (*Txt, error) {
 	return txt, nil
 }
 
-func (c *Conn) GetTxtContentById(id string) (string, error) {
+func (d *DB) GetTxtContentById(id string) (string, error) {
 	var s string
 	stmt := `SELECT content FROM txts WHERE id = ?`
 
-	err := c.DB.QueryRow(stmt, id).Scan(&s)
+	err := d.Read.QueryRow(stmt, id).Scan(&s)
 	if err != nil {
 		return "", tberr.New(err.Error())
 	}
@@ -71,10 +66,10 @@ func (c *Conn) GetTxtContentById(id string) (string, error) {
 	return s, nil
 }
 
-func (c *Conn) DeleteTxt(id string) error {
+func (d *DB) DeleteTxt(id string) error {
 	stmt := `DELETE FROM txts WHERE id = ?`
 
-	_, err := c.DB.Exec(stmt, id)
+	_, err := d.Write.Exec(stmt, id)
 	if err != nil {
 		return tberr.New(err.Error())
 	}
@@ -82,11 +77,11 @@ func (c *Conn) DeleteTxt(id string) error {
 	return nil
 }
 
-func (c *Conn) GetAllTxts(uid int) ([]*Txt, error) {
+func (d *DB) GetAllTxts(uid int) ([]*Txt, error) {
 	txts := []*Txt{}
 	stmt := `SELECT id, name, created FROM txts WHERE uid = ? ORDER BY created DESC`
 
-	rows, err := c.DB.Query(stmt, uid)
+	rows, err := d.Read.Query(stmt, uid)
 	if err != nil {
 		return nil, tberr.New(err.Error())
 	}
@@ -105,10 +100,10 @@ func (c *Conn) GetAllTxts(uid int) ([]*Txt, error) {
 	return txts, nil
 }
 
-func (c *Conn) ChangeTxtContent(txtid string, content string) error {
+func (d *DB) ChangeTxtContent(txtid string, content string) error {
 	stmt := `UPDATE txts SET content = ? WHERE id = ?`
 
-	_, err := c.DB.Exec(stmt, content, txtid)
+	_, err := d.Write.Exec(stmt, content, txtid)
 	if err != nil {
 		return tberr.New(err.Error())
 	}
@@ -116,8 +111,8 @@ func (c *Conn) ChangeTxtContent(txtid string, content string) error {
 	return nil
 }
 
-func (c *Conn) ChangeTxtId(txtid string) (string, error) {
-	_, err := c.GetTxtById(txtid)
+func (d *DB) ChangeTxtId(txtid string) (string, error) {
+	_, err := d.GetTxtById(txtid)
 	if err != nil {
 		return "", err
 	}
@@ -125,7 +120,7 @@ func (c *Conn) ChangeTxtId(txtid string) (string, error) {
 	newId := tbrandom.GenRandString(tbrandom.GenRandNum(4, viper.GetInt("limits.maxTxtIdLen")))
 	stmt := `UPDATE txts SET id = ? WHERE id = ?`
 
-	_, err = c.DB.Exec(stmt, newId, txtid)
+	_, err = d.Write.Exec(stmt, newId, txtid)
 	if err != nil {
 		return "", tberr.New(err.Error())
 	}
@@ -133,10 +128,10 @@ func (c *Conn) ChangeTxtId(txtid string) (string, error) {
 	return newId, nil
 }
 
-func (c *Conn) ChangeTxtName(txtid, name string) error {
+func (d *DB) ChangeTxtName(txtid, name string) error {
 	stmt := `UPDATE txts SET name = ? WHERE id = ?`
 
-	_, err := c.DB.Exec(stmt, name, txtid)
+	_, err := d.Write.Exec(stmt, name, txtid)
 	if err != nil {
 		return tberr.New(err.Error())
 	}

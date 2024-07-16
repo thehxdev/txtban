@@ -22,7 +22,7 @@ func CreateAuthKey(uuid, password string) string {
 	return base64.StdEncoding.EncodeToString(hash.Sum(nil))
 }
 
-func (c *Conn) CreateUser(uuid, password, authKey string) error {
+func (d *DB) CreateUser(uuid, password, authKey string) error {
 	stmt := `INSERT INTO users (uuid, phash, authKey) VALUES (?, ?, ?)`
 
 	phash, err := bcrypt.GenerateFromPassword([]byte(password), 12)
@@ -30,7 +30,7 @@ func (c *Conn) CreateUser(uuid, password, authKey string) error {
 		return tberr.New(err.Error())
 	}
 
-	_, err = c.DB.Exec(stmt, uuid, string(phash), authKey)
+	_, err = d.Write.Exec(stmt, uuid, string(phash), authKey)
 	if err != nil {
 		return tberr.New(err.Error())
 	}
@@ -38,11 +38,11 @@ func (c *Conn) CreateUser(uuid, password, authKey string) error {
 	return nil
 }
 
-func (c *Conn) AuthenticateByPassword(uuid, pass string) (*User, error) {
+func (d *DB) AuthenticateByPassword(uuid, pass string) (*User, error) {
 	u := &User{}
 	stmt := `SELECT id, uuid, phash, authKey FROM users WHERE uuid = ?`
 
-	err := c.DB.QueryRow(stmt, uuid).Scan(&u.ID, &u.UUID, &u.PHash, &u.AuthKey)
+	err := d.Read.QueryRow(stmt, uuid).Scan(&u.ID, &u.UUID, &u.PHash, &u.AuthKey)
 	if err != nil {
 		return nil, tberr.New(err.Error())
 	}
@@ -55,11 +55,11 @@ func (c *Conn) AuthenticateByPassword(uuid, pass string) (*User, error) {
 	return u, nil
 }
 
-func (c *Conn) AuthenticateByAuthKey(authKey string) (*User, error) {
+func (d *DB) AuthenticateByAuthKey(authKey string) (*User, error) {
 	u := new(User)
 	stmt := `SELECT id, uuid, phash, authKey FROM users WHERE authKey = ?`
 
-	err := c.DB.QueryRow(stmt, authKey).Scan(&u.ID, &u.UUID, &u.PHash, &u.AuthKey)
+	err := d.Read.QueryRow(stmt, authKey).Scan(&u.ID, &u.UUID, &u.PHash, &u.AuthKey)
 	if err != nil {
 		return nil, tberr.New(err.Error())
 	}
@@ -67,16 +67,16 @@ func (c *Conn) AuthenticateByAuthKey(authKey string) (*User, error) {
 	return u, nil
 }
 
-func (c *Conn) DeleteUser(id int) error {
+func (d *DB) DeleteUser(id int) error {
 	stmt1 := `DELETE FROM users WHERE id = ?`
 	stmt2 := `DELETE FROM txts WHERE uid = ?`
 
-	_, err := c.DB.Exec(stmt1, id)
+	_, err := d.Write.Exec(stmt1, id)
 	if err != nil {
 		return err
 	}
 
-	_, err = c.DB.Exec(stmt2, id)
+	_, err = d.Write.Exec(stmt2, id)
 	if err != nil {
 		return err
 	}
@@ -84,7 +84,7 @@ func (c *Conn) DeleteUser(id int) error {
 	return nil
 }
 
-func (c *Conn) UpdateUserPassword(id int, password, authKey string) error {
+func (d *DB) UpdateUserPassword(id int, password, authKey string) error {
 	stmt := `UPDATE users SET phash = ?, authKey = ? WHERE id = ?`
 
 	phash, err := bcrypt.GenerateFromPassword([]byte(password), 12)
@@ -92,7 +92,7 @@ func (c *Conn) UpdateUserPassword(id int, password, authKey string) error {
 		return tberr.New(err.Error())
 	}
 
-	_, err = c.DB.Exec(stmt, phash, authKey, id)
+	_, err = d.Write.Exec(stmt, phash, authKey, id)
 	if err != nil {
 		return tberr.New(err.Error())
 	}

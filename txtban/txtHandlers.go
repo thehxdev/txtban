@@ -8,7 +8,7 @@ import (
 
 func (t *Txtban) readHandler(c *fiber.Ctx) error {
 	txtid := c.Params("txtid")
-	content, err := t.Conn.GetTxtContentById(txtid)
+	content, err := t.DB.GetTxtContentById(txtid)
 	if err != nil {
 		t.ErrLogger.Println(err.Error())
 		return err
@@ -28,13 +28,13 @@ func (t *Txtban) teeHandler(c *fiber.Ctx) error {
 		return errors.New("txt name could not be empty")
 	}
 
-	user, err := t.Conn.AuthenticateByAuthKey(authKey)
+	user, err := t.DB.AuthenticateByAuthKey(authKey)
 	if err != nil {
 		t.ErrLogger.Println(err.Error())
 		return fiber.ErrUnauthorized
 	}
 
-	txtid, err := t.Conn.CreateTxt(user.ID, txtName, string(c.Body()))
+	txtid, err := t.DB.CreateTxt(user.ID, txtName, string(c.Body()))
 	if err != nil {
 		t.ErrLogger.Println(err.Error())
 		return err
@@ -53,7 +53,7 @@ func (t *Txtban) rmHandler(c *fiber.Ctx) error {
 		return err
 	}
 
-	_, err = t.Conn.AuthenticateByAuthKey(authKey)
+	_, err = t.DB.AuthenticateByAuthKey(authKey)
 	if err != nil {
 		t.ErrLogger.Println(err.Error())
 		return fiber.ErrUnauthorized
@@ -65,7 +65,7 @@ func (t *Txtban) rmHandler(c *fiber.Ctx) error {
 		return errors.New("txt id could not be empty")
 	}
 
-	err = t.Conn.DeleteTxt(txtid)
+	err = t.DB.DeleteTxt(txtid)
 	if err != nil {
 		t.ErrLogger.Println(err.Error())
 		return err
@@ -81,13 +81,13 @@ func (t *Txtban) lsHandler(c *fiber.Ctx) error {
 		return err
 	}
 
-	user, err := t.Conn.AuthenticateByAuthKey(authKey)
+	user, err := t.DB.AuthenticateByAuthKey(authKey)
 	if err != nil {
 		t.ErrLogger.Println(err.Error())
 		return fiber.ErrUnauthorized
 	}
 
-	txts, err := t.Conn.GetAllTxts(user.ID)
+	txts, err := t.DB.GetAllTxts(user.ID)
 	if err != nil {
 		t.ErrLogger.Println(err.Error())
 		return err
@@ -103,7 +103,7 @@ func (t *Txtban) chtxtHandler(c *fiber.Ctx) error {
 		return err
 	}
 
-	_, err = t.Conn.AuthenticateByAuthKey(authKey)
+	_, err = t.DB.AuthenticateByAuthKey(authKey)
 	if err != nil {
 		t.ErrLogger.Println(err.Error())
 		return fiber.ErrUnauthorized
@@ -115,7 +115,7 @@ func (t *Txtban) chtxtHandler(c *fiber.Ctx) error {
 		return errors.New("txt id could not be empty")
 	}
 
-	err = t.Conn.ChangeTxtContent(txtid, string(c.Body()))
+	err = t.DB.ChangeTxtContent(txtid, string(c.Body()))
 	if err != nil {
 		t.ErrLogger.Println(err.Error())
 		return err
@@ -131,7 +131,7 @@ func (t *Txtban) mvHandler(c *fiber.Ctx) error {
 		return err
 	}
 
-	_, err = t.Conn.AuthenticateByAuthKey(authKey)
+	_, err = t.DB.AuthenticateByAuthKey(authKey)
 	if err != nil {
 		t.ErrLogger.Println(err.Error())
 		return fiber.ErrUnauthorized
@@ -143,7 +143,7 @@ func (t *Txtban) mvHandler(c *fiber.Ctx) error {
 		return errors.New("txt id could not be empty")
 	}
 
-	newId, err := t.Conn.ChangeTxtId(txtid)
+	newId, err := t.DB.ChangeTxtId(txtid)
 	if err != nil {
 		t.ErrLogger.Println(err.Error())
 		return err
@@ -167,7 +167,7 @@ func (t *Txtban) renameHandler(c *fiber.Ctx) error {
 		return err
 	}
 
-	_, err = t.Conn.AuthenticateByAuthKey(authKey)
+	_, err = t.DB.AuthenticateByAuthKey(authKey)
 	if err != nil {
 		t.ErrLogger.Println(err.Error())
 		return fiber.ErrUnauthorized
@@ -179,7 +179,7 @@ func (t *Txtban) renameHandler(c *fiber.Ctx) error {
 		return errors.New("txt id could not be empty")
 	}
 
-	err = t.Conn.ChangeTxtName(txtid, jdata["name"])
+	err = t.DB.ChangeTxtName(txtid, jdata["name"])
 	if err != nil {
 		t.ErrLogger.Println(err.Error())
 		return err

@@ -22,7 +22,7 @@ func main() {
 	}
 
 	tb := txtban.Init(*configPath)
-	defer tb.Conn.DB.Close()
+	defer tb.CloseDB()
 
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGTERM, syscall.SIGINT)
