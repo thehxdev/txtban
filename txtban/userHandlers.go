@@ -103,6 +103,15 @@ func (t *Txtban) passwdHandler(c *fiber.Ctx) error {
 	}
 
 	newPass := jdata.NewPassword
+	minPassLen := viper.GetInt("limits.minPasswordLen")
+	if len(newPass) < minPassLen {
+		c.Status(fiber.StatusBadRequest)
+		err := tberr.New(
+			fmt.Sprintf("new password length is less than %d characters", minPassLen),
+			fmt.Sprintf("choose a strong password with more than %d characters", minPassLen))
+		return sendError(c, err, fiber.StatusBadRequest)
+	}
+
 	newAuthKey := models.CreateAuthKey(user.UUID, newPass)
 	err = t.DB.UpdateUserPassword(user.ID, newPass, newAuthKey)
 	if err != nil {
