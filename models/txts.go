@@ -1,9 +1,11 @@
 package models
 
 import (
-	"github.com/spf13/viper"
-	"github.com/thehxdev/txtban/tbrandom"
 	"time"
+
+	"github.com/spf13/viper"
+	"github.com/thehxdev/txtban/tberr"
+	"github.com/thehxdev/txtban/tbrandom"
 )
 
 type Txt struct {
@@ -22,12 +24,12 @@ func (c *Conn) CreateTxt(uid int, name, content string) (string, error) {
 
 	res, err := c.DB.Exec(stmt, id, name, content, uid)
 	if err != nil {
-		return "", err
+		return "", tberr.New(err.Error())
 	}
 
 	_, err = res.LastInsertId()
 	if err != nil {
-		return "", err
+		return "", tberr.New(err.Error())
 	}
 
 	return id, nil
@@ -39,7 +41,19 @@ func (c *Conn) GetTxtByName(uid int, name string) (*Txt, error) {
 
 	err := c.DB.QueryRow(stmt, uid, name).Scan(&txt.ID, &txt.Name, &txt.Content, &txt.Created, &txt.UID)
 	if err != nil {
-		return nil, err
+		return nil, tberr.New(err.Error())
+	}
+
+	return txt, nil
+}
+
+func (c *Conn) GetTxtById(txtid string) (*Txt, error) {
+	txt := new(Txt)
+	stmt := `SELECT * FROM txts WHERE id = ?`
+
+	err := c.DB.QueryRow(stmt, txtid).Scan(&txt.ID, &txt.Name, &txt.Content, &txt.Created, &txt.UID)
+	if err != nil {
+		return nil, tberr.New(err.Error())
 	}
 
 	return txt, nil
@@ -51,7 +65,7 @@ func (c *Conn) GetTxtContentById(id string) (string, error) {
 
 	err := c.DB.QueryRow(stmt, id).Scan(&s)
 	if err != nil {
-		return "", err
+		return "", tberr.New(err.Error())
 	}
 
 	return s, nil
@@ -62,7 +76,7 @@ func (c *Conn) DeleteTxt(id string) error {
 
 	_, err := c.DB.Exec(stmt, id)
 	if err != nil {
-		return err
+		return tberr.New(err.Error())
 	}
 
 	return nil
@@ -74,7 +88,7 @@ func (c *Conn) GetAllTxts(uid int) ([]*Txt, error) {
 
 	rows, err := c.DB.Query(stmt, uid)
 	if err != nil {
-		return nil, err
+		return nil, tberr.New(err.Error())
 	}
 	defer rows.Close()
 
@@ -82,7 +96,7 @@ func (c *Conn) GetAllTxts(uid int) ([]*Txt, error) {
 		txt := &Txt{}
 		err := rows.Scan(&txt.ID, &txt.Name, &txt.Created)
 		if err != nil {
-			return nil, err
+			return nil, tberr.New(err.Error())
 		}
 
 		txts = append(txts, txt)
@@ -96,19 +110,24 @@ func (c *Conn) ChangeTxtContent(txtid string, content string) error {
 
 	_, err := c.DB.Exec(stmt, content, txtid)
 	if err != nil {
-		return err
+		return tberr.New(err.Error())
 	}
 
 	return nil
 }
 
 func (c *Conn) ChangeTxtId(txtid string) (string, error) {
+	_, err := c.GetTxtById(txtid)
+	if err != nil {
+		return "", err
+	}
+
 	newId := tbrandom.GenRandString(tbrandom.GenRandNum(4, viper.GetInt("limits.maxTxtIdLen")))
 	stmt := `UPDATE txts SET id = ? WHERE id = ?`
 
-	_, err := c.DB.Exec(stmt, newId, txtid)
+	_, err = c.DB.Exec(stmt, newId, txtid)
 	if err != nil {
-		return "", err
+		return "", tberr.New(err.Error())
 	}
 
 	return newId, nil
@@ -119,7 +138,7 @@ func (c *Conn) ChangeTxtName(txtid, name string) error {
 
 	_, err := c.DB.Exec(stmt, name, txtid)
 	if err != nil {
-		return err
+		return tberr.New(err.Error())
 	}
 
 	return nil

@@ -1,11 +1,13 @@
 package txtban
 
-import "errors"
+import (
+	"github.com/thehxdev/txtban/tberr"
+)
 
 func getAuthKey(headers map[string][]string) (string, error) {
 	authHeader := headers["Authorization"]
 	if len(authHeader) == 0 {
-		return "", errors.New("Authorization header is empty")
+		return "", tberr.New("authorization header is empty")
 	}
 	return authHeader[0], nil
 }

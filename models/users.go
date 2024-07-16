@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 
+	"github.com/thehxdev/txtban/tberr"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -26,12 +27,12 @@ func (c *Conn) CreateUser(uuid, password, authKey string) error {
 
 	phash, err := bcrypt.GenerateFromPassword([]byte(password), 12)
 	if err != nil {
-		return err
+		return tberr.New(err.Error())
 	}
 
 	_, err = c.DB.Exec(stmt, uuid, string(phash), authKey)
 	if err != nil {
-		return err
+		return tberr.New(err.Error())
 	}
 
 	return nil
@@ -43,12 +44,12 @@ func (c *Conn) AuthenticateByPassword(uuid, pass string) (*User, error) {
 
 	err := c.DB.QueryRow(stmt, uuid).Scan(&u.ID, &u.UUID, &u.PHash, &u.AuthKey)
 	if err != nil {
-		return nil, err
+		return nil, tberr.New(err.Error())
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(u.PHash), []byte(pass))
 	if err != nil {
-		return nil, err
+		return nil, tberr.New(err.Error(), "double check your password")
 	}
 
 	return u, nil
@@ -60,7 +61,7 @@ func (c *Conn) AuthenticateByAuthKey(authKey string) (*User, error) {
 
 	err := c.DB.QueryRow(stmt, authKey).Scan(&u.ID, &u.UUID, &u.PHash, &u.AuthKey)
 	if err != nil {
-		return nil, err
+		return nil, tberr.New(err.Error())
 	}
 
 	return u, nil
@@ -88,12 +89,12 @@ func (c *Conn) UpdateUserPassword(id int, password, authKey string) error {
 
 	phash, err := bcrypt.GenerateFromPassword([]byte(password), 12)
 	if err != nil {
-		return err
+		return tberr.New(err.Error())
 	}
 
 	_, err = c.DB.Exec(stmt, phash, authKey, id)
 	if err != nil {
-		return err
+		return tberr.New(err.Error())
 	}
 
 	return nil

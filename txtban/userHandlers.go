@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/spf13/viper"
 	"github.com/thehxdev/txtban/models"
+	"github.com/thehxdev/txtban/tberr"
 )
 
 func (t *Txtban) useraddHandler(c *fiber.Ctx) error {
@@ -27,7 +28,9 @@ func (t *Txtban) useraddHandler(c *fiber.Ctx) error {
 	minPassLen := viper.GetInt("limits.minPasswordLen")
 	if len(pass) < minPassLen {
 		c.Status(fiber.StatusBadRequest)
-		return fmt.Errorf("password length is less than %d characters", minPassLen)
+		return tberr.New(
+			fmt.Sprintf("password length is less than %d characters", minPassLen),
+			fmt.Sprintf("choose a strong password with more than %d characters", minPassLen))
 	}
 
 	authKey := models.CreateAuthKey(uuid.String(), pass)
