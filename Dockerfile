@@ -7,7 +7,6 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 
-
 COPY . .
 ENV CGO_ENABLED=1
 RUN go build -ldflags='-s' -o tb .
