@@ -12,7 +12,7 @@ import (
 	"github.com/thehxdev/txtban/models"
 )
 
-const VERSION string = "1.1.0"
+const VERSION string = "1.1.1"
 
 type Txtban struct {
 	App       *fiber.App
