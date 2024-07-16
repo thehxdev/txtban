@@ -182,10 +182,10 @@ func (t *Txtban) renameHandler(c *fiber.Ctx) error {
 		t.ErrLogger.Println(err.Error())
 		return sendError(c, errBadJsonData, fiber.StatusBadRequest)
 	}
-    
-    if len(jdata.Name) == 0 {
+
+	if len(jdata.Name) == 0 {
 		return sendError(c, errEmptyTxtName, fiber.StatusBadRequest)
-    }
+	}
 
 	_, err = t.DB.AuthenticateByAuthKey(authKey)
 	if err != nil {
