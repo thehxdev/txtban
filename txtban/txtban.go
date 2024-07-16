@@ -13,6 +13,8 @@ import (
 	"github.com/thehxdev/txtban/models"
 )
 
+const VERSION string = "1.0.0"
+
 type Txtban struct {
 	App       *fiber.App
 	Conn      *models.Conn
@@ -88,5 +90,5 @@ func (t *Txtban) ConfigureRoutes() {
 }
 
 func rootHandler(c *fiber.Ctx) error {
-	return c.SendString("txtban service running!")
+	return c.SendString(fmt.Sprintf("txtban service v%s running!", VERSION))
 }

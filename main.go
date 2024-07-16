@@ -11,15 +11,13 @@ import (
 	"github.com/thehxdev/txtban/txtban"
 )
 
-const VERSION string = "1.0.0"
-
 func main() {
 	configPath := flag.String("c", "./config.toml", "Path to config file")
 	showVersion := flag.Bool("v", false, "Show version info")
 	flag.Parse()
 
 	if *showVersion {
-		fmt.Printf("Txtban v%s\nhttps://github.com/thehxdev/txtban\n", VERSION)
+		fmt.Printf("Txtban v%s\nhttps://github.com/thehxdev/txtban\n", txtban.VERSION)
 		return
 	}
 
