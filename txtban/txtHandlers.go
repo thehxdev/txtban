@@ -10,7 +10,7 @@ func (t *Txtban) readHandler(c *fiber.Ctx) error {
 	content, err := t.DB.GetTxtContentById(txtid)
 	if err != nil {
 		t.ErrLogger.Println(err.Error())
-		return sendError(c, errInternalServerError, fiber.StatusInternalServerError)
+		return sendError(c, tberr.New(fiber.ErrNotFound.Error()), fiber.StatusNotFound)
 	}
 	return c.SendString(content)
 }
