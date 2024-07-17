@@ -68,8 +68,8 @@ func (d *DB) AuthenticateByAuthKey(authKey string) (*User, error) {
 }
 
 func (d *DB) DeleteUser(id int) error {
-	stmt1 := `DELETE FROM users WHERE id = ?`
-	stmt2 := `DELETE FROM txts WHERE uid = ?`
+	stmt1 := `DELETE FROM txts WHERE uid = ?`
+	stmt2 := `DELETE FROM users WHERE id = ?`
 
 	_, err := d.Write.Exec(stmt1, id)
 	if err != nil {
