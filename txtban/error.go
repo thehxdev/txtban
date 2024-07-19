@@ -19,7 +19,7 @@ var (
 func sendError(w http.ResponseWriter, err error, status int) {
 	w.WriteHeader(status)
 
-	errData, err := json.Marshal(err.Error())
+	errData, err := json.Marshal(err)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		errData = []byte(`{"error": "Internal Server Error"}`)
