@@ -59,9 +59,8 @@ func (t *Txtban) useraddHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (t *Txtban) userdelHandler(w http.ResponseWriter, r *http.Request) {
-	authKey, err := getAuthKey(r.Header)
-	if err != nil {
-		t.ErrLogger.Println(err.Error())
+	authKey := r.Header.Get("Authorization")
+	if authKey == "" {
 		sendError(w, errEmptyAuthorizationHeader, http.StatusBadRequest)
 		return
 	}
