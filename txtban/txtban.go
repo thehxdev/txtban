@@ -3,9 +3,12 @@ package txtban
 import (
 	"fmt"
 	"log"
+	"net"
+	"net/http"
 	"os"
+	"strconv"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/go-chi/chi/v5"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/spf13/viper"
 	"github.com/thehxdev/txtban/config"
@@ -15,7 +18,7 @@ import (
 const VERSION string = "1.2.3"
 
 type Txtban struct {
-	App       *fiber.App
+	Server    *http.Server
 	DB        *models.DB
 	ErrLogger *log.Logger
 	InfLogger *log.Logger
@@ -24,7 +27,6 @@ type Txtban struct {
 
 func Init(configPath string) *Txtban {
 	t := &Txtban{
-		App:       fiber.New(),
 		ErrLogger: log.New(os.Stderr, "[ERROR]\t", log.Ldate|log.Ltime|log.Lshortfile),
 		InfLogger: log.New(os.Stdout, "[INFO]\t", log.Ldate|log.Ltime),
 		DB:        &models.DB{},
@@ -33,7 +35,11 @@ func Init(configPath string) *Txtban {
 
 	config.SetupViper(t.Config, configPath)
 
-	t.ConfigureRoutes()
+	t.Server = &http.Server{
+		Addr:    net.JoinHostPort(viper.GetString("server.address"), strconv.Itoa(viper.GetInt("server.port"))),
+		Handler: t.configureRoutes(),
+	}
+
 	t.setupDB(viper.GetString("database.path"))
 
 	return t
@@ -41,8 +47,7 @@ func Init(configPath string) *Txtban {
 
 func (t *Txtban) Run() error {
 	t.InfLogger.Println("starting server...")
-	listenAddr := fmt.Sprintf("%s:%d", viper.GetString("server.address"), viper.GetInt("server.port"))
-	return t.App.Listen(listenAddr)
+	return t.Server.ListenAndServe()
 }
 
 func (t *Txtban) setupDB(path string) {
@@ -69,29 +74,32 @@ func (t *Txtban) CloseDB() {
 	t.DB.Write.Close()
 }
 
-func (t *Txtban) ConfigureRoutes() {
+func (t *Txtban) configureRoutes() http.Handler {
 	t.InfLogger.Println("configuring routes...")
-	app := t.App
+	r := chi.NewRouter()
 
 	// Root
-	app.Get("/", rootHandler)
+	r.Get("/", rootHandler)
 
 	// User related routes
-	app.Post("/useradd", t.useraddHandler)
-	app.Get("/whoami", t.whoamiHandler)
-	app.Delete("/userdel", t.userdelHandler)
-	app.Put("/passwd", t.passwdHandler)
+	r.Post("/useradd", t.useraddHandler)
+	r.Get("/whoami", t.whoamiHandler)
+	r.Delete("/userdel", t.userdelHandler)
+	r.Put("/passwd", t.passwdHandler)
 
 	// Txt related routes
-	app.Post("/tee", t.teeHandler)
-	app.Get("/ls", t.lsHandler)
-	app.Put("/chtxt", t.chtxtHandler)
-	app.Delete("/rm", t.rmHandler)
-	app.Get("/t/:txtid", t.readHandler)
-	app.Put("/mv", t.mvHandler)
-	app.Put("/rename", t.renameHandler)
+	r.Post("/tee", t.teeHandler)
+	r.Get("/ls", t.lsHandler)
+	r.Put("/chtxt", t.chtxtHandler)
+	r.Delete("/rm", t.rmHandler)
+	r.Get("/t/{txtid}", t.readHandler)
+	r.Put("/mv", t.mvHandler)
+	r.Put("/rename", t.renameHandler)
+
+	return r
 }
 
-func rootHandler(c *fiber.Ctx) error {
-	return c.SendString(fmt.Sprintf("txtban service v%s running!", VERSION))
+func rootHandler(w http.ResponseWriter, r *http.Request) {
+	msg := fmt.Sprintf("txtban service v%s running!", VERSION)
+	w.Write([]byte(msg))
 }

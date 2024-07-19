@@ -3,6 +3,9 @@ package txtban
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
+
 	"github.com/thehxdev/txtban/tberr"
 )
 
@@ -36,4 +39,17 @@ func getAuthKey(headers map[string][]string) (string, error) {
 
 func parseJsonBody(body []byte, v any) error {
 	return json.Unmarshal(body, v)
+}
+
+func readRequestBody(body io.Reader) ([]byte, error) {
+	return io.ReadAll(body)
+}
+
+func sendJson(w http.ResponseWriter, v any) {
+	data, err := json.Marshal(v)
+	if err != nil {
+		sendError(w, errInternalServerError, http.StatusInternalServerError)
+		return
+	}
+	w.Write(data)
 }

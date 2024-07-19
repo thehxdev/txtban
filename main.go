@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -24,21 +26,35 @@ func main() {
 	tb := txtban.Init(*configPath)
 	defer tb.CloseDB()
 
+	serverCtx, serverCtxStop := context.WithCancel(context.Background())
+
 	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, syscall.SIGTERM, syscall.SIGINT)
+	signal.Notify(sigChan, syscall.SIGTERM, syscall.SIGINT, syscall.SIGHUP, syscall.SIGQUIT)
 
 	go func() {
-		defer close(sigChan)
-		err := tb.Run()
+		<-sigChan
+		tb.InfLogger.Println("Shutting down the server...")
+		shutdownCtx, _ := context.WithTimeout(serverCtx, 10*time.Second)
+
+		go func() {
+			<-shutdownCtx.Done()
+			if shutdownCtx.Err() == context.DeadlineExceeded {
+				tb.ErrLogger.Fatal("server shutdown timeout... force exit")
+			}
+		}()
+
+		err := tb.Server.Shutdown(shutdownCtx)
 		if err != nil {
-			tb.ErrLogger.Println(err)
+			tb.ErrLogger.Fatal(err)
 		}
+
+		serverCtxStop()
 	}()
 
-	_ = <-sigChan
-	tb.InfLogger.Println("Shutting down the server...")
-	err := tb.App.ShutdownWithTimeout(time.Second * 10)
-	if err != nil {
-		tb.ErrLogger.Println(err)
+	err := tb.Run()
+	if err != nil && err != http.ErrServerClosed {
+		tb.ErrLogger.Fatal(err)
 	}
+
+	<-serverCtx.Done()
 }

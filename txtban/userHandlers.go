@@ -2,124 +2,156 @@ package txtban
 
 import (
 	"fmt"
+	"net/http"
 
-	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/spf13/viper"
 	"github.com/thehxdev/txtban/models"
 	"github.com/thehxdev/txtban/tberr"
 )
 
-func (t *Txtban) useraddHandler(c *fiber.Ctx) error {
+func (t *Txtban) useraddHandler(w http.ResponseWriter, r *http.Request) {
 	var jdata JsonData
 
-	if err := parseJsonBody(c.Body(), &jdata); err != nil {
-		t.ErrLogger.Println(err.Error())
-		return sendError(c, errBadJsonData, fiber.StatusBadRequest)
+	body, err := readRequestBody(r.Body)
+	if err != nil {
+		t.ErrLogger.Println(err)
+		sendError(w, errInternalServerError, http.StatusInternalServerError)
+		return
+	}
+	defer r.Body.Close()
+
+	if err := parseJsonBody(body, &jdata); err != nil {
+		t.ErrLogger.Println(err)
+		sendError(w, errBadJsonData, http.StatusBadRequest)
+		return
 	}
 
 	uuid, err := uuid.NewRandom()
 	if err != nil {
-		t.ErrLogger.Println(err.Error())
-		return sendError(c, errInternalServerError, fiber.StatusInternalServerError)
+		t.ErrLogger.Println(err)
+		sendError(w, errInternalServerError, http.StatusInternalServerError)
+		return
 	}
 
 	pass := jdata.Password
 	minPassLen := viper.GetInt("limits.minPasswordLen")
 	if len(pass) < minPassLen {
-		c.Status(fiber.StatusBadRequest)
 		err := tberr.New(
 			fmt.Sprintf("password length is less than %d characters", minPassLen),
 			fmt.Sprintf("choose a strong password with more than %d characters", minPassLen))
-		return sendError(c, err, fiber.StatusBadRequest)
+		sendError(w, err, http.StatusBadRequest)
+		return
 	}
 
 	authKey := models.CreateAuthKey(uuid.String(), pass)
 	err = t.DB.CreateUser(uuid.String(), pass, authKey)
 	if err != nil {
 		t.ErrLogger.Println(err.Error())
-		return sendError(c, errInternalServerError, fiber.StatusInternalServerError)
+		sendError(w, errInternalServerError, http.StatusInternalServerError)
+		return
 	}
 
-	return c.JSON(map[string]string{
+	sendJson(w, map[string]string{
 		"uuid":    uuid.String(),
 		"authKey": authKey,
 	})
 }
 
-func (t *Txtban) userdelHandler(c *fiber.Ctx) error {
-	authKey, err := getAuthKey(c.GetReqHeaders())
+func (t *Txtban) userdelHandler(w http.ResponseWriter, r *http.Request) {
+	authKey, err := getAuthKey(r.Header)
 	if err != nil {
 		t.ErrLogger.Println(err.Error())
-		return sendError(c, errEmptyAuthorizationHeader, fiber.StatusBadRequest)
+		sendError(w, errEmptyAuthorizationHeader, http.StatusBadRequest)
+		return
 	}
 
 	user, err := t.DB.AuthenticateByAuthKey(authKey)
 	if err != nil {
 		t.ErrLogger.Println(err.Error())
-		return sendError(c, errUnauthorized, fiber.StatusUnauthorized)
+		sendError(w, errUnauthorized, http.StatusUnauthorized)
+		return
 	}
 
 	err = t.DB.DeleteUser(user.ID)
 	if err != nil {
 		t.ErrLogger.Println(err.Error())
-		return sendError(c, errInternalServerError, fiber.StatusInternalServerError)
+		sendError(w, errInternalServerError, http.StatusInternalServerError)
 	}
-
-	return nil
 }
 
-func (t *Txtban) whoamiHandler(c *fiber.Ctx) error {
+func (t *Txtban) whoamiHandler(w http.ResponseWriter, r *http.Request) {
 	var jdata JsonData
 
-	if err := parseJsonBody(c.Body(), &jdata); err != nil {
+	body, err := readRequestBody(r.Body)
+	if err != nil {
+		t.ErrLogger.Println(err)
+		sendError(w, errInternalServerError, http.StatusInternalServerError)
+		return
+	}
+	defer r.Body.Close()
+
+	if err := parseJsonBody(body, &jdata); err != nil {
 		t.ErrLogger.Println(err.Error())
-		return sendError(c, errBadJsonData, fiber.StatusBadRequest)
+		sendError(w, errBadJsonData, http.StatusBadRequest)
+		return
 	}
 
 	user, err := t.DB.AuthenticateByPassword(jdata.UserId, jdata.Password)
 	if err != nil {
 		t.ErrLogger.Println(err.Error())
-		return sendError(c, errUnauthorized, fiber.StatusInternalServerError)
+		sendError(w, errUnauthorized, http.StatusInternalServerError)
+		return
 	}
 
-	return c.JSON(map[string]string{
+	sendJson(w, map[string]string{
 		"authKey": user.AuthKey,
 	})
 }
 
-func (t *Txtban) passwdHandler(c *fiber.Ctx) error {
+func (t *Txtban) passwdHandler(w http.ResponseWriter, r *http.Request) {
 	var jdata JsonData
 
-	if err := parseJsonBody(c.Body(), &jdata); err != nil {
+	body, err := readRequestBody(r.Body)
+	if err != nil {
+		t.ErrLogger.Println(err)
+		sendError(w, errInternalServerError, http.StatusInternalServerError)
+		return
+	}
+	defer r.Body.Close()
+
+	if err := parseJsonBody(body, &jdata); err != nil {
 		t.ErrLogger.Println(err.Error())
-		return sendError(c, errBadJsonData, fiber.StatusBadRequest)
+		sendError(w, errBadJsonData, http.StatusBadRequest)
+		return
 	}
 
 	user, err := t.DB.AuthenticateByPassword(jdata.UserId, jdata.OldPassword)
 	if err != nil {
 		t.ErrLogger.Println(err.Error())
-		return sendError(c, errUnauthorized, fiber.StatusUnauthorized)
+		sendError(w, errUnauthorized, http.StatusUnauthorized)
+		return
 	}
 
 	newPass := jdata.NewPassword
 	minPassLen := viper.GetInt("limits.minPasswordLen")
 	if len(newPass) < minPassLen {
-		c.Status(fiber.StatusBadRequest)
 		err := tberr.New(
 			fmt.Sprintf("new password length is less than %d characters", minPassLen),
 			fmt.Sprintf("choose a strong password with more than %d characters", minPassLen))
-		return sendError(c, err, fiber.StatusBadRequest)
+		sendError(w, err, http.StatusBadRequest)
+		return
 	}
 
 	newAuthKey := models.CreateAuthKey(user.UUID, newPass)
 	err = t.DB.UpdateUserPassword(user.ID, newPass, newAuthKey)
 	if err != nil {
 		t.ErrLogger.Println(err.Error())
-		return sendError(c, errInternalServerError, fiber.StatusInternalServerError)
+		sendError(w, errInternalServerError, http.StatusInternalServerError)
+		return
 	}
 
-	return c.JSON(map[string]string{
+	sendJson(w, map[string]string{
 		"authKey": newAuthKey,
 	})
 }
