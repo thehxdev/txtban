@@ -14,13 +14,17 @@ func (t *Txtban) readHandler(w http.ResponseWriter, r *http.Request) {
 		sendError(w, tberr.New("Not Found"), http.StatusNotFound)
 		return
 	}
-	w.Write([]byte(content))
+
+	if acceptsGzip(r.Header.Values("Accept-Encoding")) {
+		sendCompressed(w, []byte(content))
+	} else {
+		w.Write([]byte(content))
+	}
 }
 
 func (t *Txtban) teeHandler(w http.ResponseWriter, r *http.Request) {
-	authKey, err := getAuthKey(r.Header)
-	if err != nil {
-		t.ErrLogger.Println(err)
+	authKey := r.Header.Get("Authorization")
+	if authKey == "" {
 		sendError(w, errEmptyAuthorizationHeader, http.StatusBadRequest)
 		return
 	}
@@ -67,9 +71,8 @@ func (t *Txtban) teeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (t *Txtban) rmHandler(w http.ResponseWriter, r *http.Request) {
-	authKey, err := getAuthKey(r.Header)
-	if err != nil {
-		t.ErrLogger.Println(err.Error())
+	authKey := r.Header.Get("Authorization")
+	if authKey == "" {
 		sendError(w, errEmptyAuthorizationHeader, http.StatusBadRequest)
 		return
 	}
@@ -80,7 +83,7 @@ func (t *Txtban) rmHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = t.DB.AuthenticateByAuthKey(authKey)
+	_, err := t.DB.AuthenticateByAuthKey(authKey)
 	if err != nil {
 		t.ErrLogger.Println(err.Error())
 		sendError(w, errUnauthorized, http.StatusUnauthorized)
@@ -96,9 +99,8 @@ func (t *Txtban) rmHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (t *Txtban) lsHandler(w http.ResponseWriter, r *http.Request) {
-	authKey, err := getAuthKey(r.Header)
-	if err != nil {
-		t.ErrLogger.Println(err.Error())
+	authKey := r.Header.Get("Authorization")
+	if authKey == "" {
 		sendError(w, errEmptyAuthorizationHeader, http.StatusBadRequest)
 		return
 	}
@@ -121,9 +123,8 @@ func (t *Txtban) lsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (t *Txtban) chtxtHandler(w http.ResponseWriter, r *http.Request) {
-	authKey, err := getAuthKey(r.Header)
-	if err != nil {
-		t.ErrLogger.Println(err)
+	authKey := r.Header.Get("Authorization")
+	if authKey == "" {
 		sendError(w, errEmptyAuthorizationHeader, http.StatusBadRequest)
 		return
 	}
@@ -134,7 +135,7 @@ func (t *Txtban) chtxtHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = t.DB.AuthenticateByAuthKey(authKey)
+	_, err := t.DB.AuthenticateByAuthKey(authKey)
 	if err != nil {
 		t.ErrLogger.Println(err)
 		sendError(w, errUnauthorized, http.StatusUnauthorized)
@@ -158,9 +159,8 @@ func (t *Txtban) chtxtHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (t *Txtban) mvHandler(w http.ResponseWriter, r *http.Request) {
-	authKey, err := getAuthKey(r.Header)
-	if err != nil {
-		t.ErrLogger.Println(err)
+	authKey := r.Header.Get("Authorization")
+	if authKey == "" {
 		sendError(w, errEmptyAuthorizationHeader, http.StatusBadRequest)
 		return
 	}
@@ -171,7 +171,7 @@ func (t *Txtban) mvHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = t.DB.AuthenticateByAuthKey(authKey)
+	_, err := t.DB.AuthenticateByAuthKey(authKey)
 	if err != nil {
 		t.ErrLogger.Println(err)
 		sendError(w, errUnauthorized, http.StatusUnauthorized)
@@ -191,9 +191,8 @@ func (t *Txtban) mvHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (t *Txtban) renameHandler(w http.ResponseWriter, r *http.Request) {
-	authKey, err := getAuthKey(r.Header)
-	if err != nil {
-		t.ErrLogger.Println(err.Error())
+	authKey := r.Header.Get("Authorization")
+	if authKey == "" {
 		sendError(w, errEmptyAuthorizationHeader, http.StatusBadRequest)
 		return
 	}
