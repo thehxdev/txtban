@@ -34,13 +34,14 @@ func main() {
 	go func() {
 		<-sigChan
 		tb.InfLogger.Println("Shutting down the server...")
-		shutdownCtx, _ := context.WithTimeout(serverCtx, 10*time.Second)
+		shutdownCtx, shutdownCancelFunc := context.WithTimeout(serverCtx, 10*time.Second)
 
 		go func() {
 			<-shutdownCtx.Done()
 			if shutdownCtx.Err() == context.DeadlineExceeded {
 				tb.ErrLogger.Fatal("server shutdown timeout... force exit")
 			}
+			serverCtxStop()
 		}()
 
 		err := tb.Server.Shutdown(shutdownCtx)
@@ -48,7 +49,7 @@ func main() {
 			tb.ErrLogger.Fatal(err)
 		}
 
-		serverCtxStop()
+		shutdownCancelFunc()
 	}()
 
 	err := tb.Run()
