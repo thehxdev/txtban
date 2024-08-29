@@ -5,8 +5,8 @@ import (
 )
 
 const (
-	CHARS string = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-+="
-	CHLEN        = len(CHARS)
+	CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-+="
+	CHLEN = len(CHARS)
 )
 
 func GenRandNum(low, top int) int {

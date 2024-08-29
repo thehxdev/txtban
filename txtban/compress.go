@@ -9,7 +9,7 @@ func sendCompressed(w http.ResponseWriter, data []byte) {
 	w.Header().Set("Content-Encoding", "gzip")
 
 	writer := gzip.NewWriter(w)
-    defer writer.Close()
+	defer writer.Close()
 
 	_, err := writer.Write(data)
 	if err != nil {
