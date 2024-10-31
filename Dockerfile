@@ -1,4 +1,4 @@
-FROM golang:1.22-alpine
+FROM golang:1.23-alpine
 
 RUN apk update && apk add --no-cache build-base make alpine-sdk sqlite
 ENV GOPROXY=https://goproxy.io,direct
