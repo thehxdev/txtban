@@ -15,7 +15,7 @@ import (
 	"github.com/thehxdev/txtban/models"
 )
 
-const VERSION string = "1.3.2"
+const VERSION string = "1.3.3"
 
 type Txtban struct {
 	Server    *http.Server
