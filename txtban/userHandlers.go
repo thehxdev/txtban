@@ -52,6 +52,7 @@ func (t *Txtban) useraddHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.WriteHeader(http.StatusCreated)
 	sendJson(w, map[string]string{
 		"uuid":    uuid.String(),
 		"authKey": authKey,

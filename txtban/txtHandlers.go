@@ -64,6 +64,7 @@ func (t *Txtban) teeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.WriteHeader(http.StatusCreated)
 	sendJson(w, map[string]string{
 		"id":   txtid,
 		"name": txtName,
