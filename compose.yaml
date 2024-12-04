@@ -1,0 +1,13 @@
+services:
+  app:
+    container_name: dockerTxtban
+    build:
+        context: .
+        dockerfile: ./Dockerfile
+    command: ./tb
+    ports:
+      - 127.0.0.1:8080:8080
+    volumes:
+      - ./config.toml:/etc/txtban/config.toml
+      - ./data:/app/data
+    restart: always
