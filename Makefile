@@ -3,7 +3,7 @@ BIN := tb
 DATA_DIR := ./data
 
 $(BIN): $(wildcard *.go) $(wildcard */*.go)
-	CGO_ENABLED=1 $(GO) build -ldflags='-s' -o $(BIN) .
+	CGO_ENABLED=1 $(GO) build -trimpath -ldflags='-s -w -buildid=' -o $(BIN) .
 
 # Build docker image
 docker: clean ./Dockerfile
